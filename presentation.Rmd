@@ -1,0 +1,57 @@
+---
+title: "Course Project of Developing Data Products"
+author: "jpanda111"
+date: "April 25, 2018"
+output:
+  slidy_presentation: default
+  ioslides_presentation: default
+---
+
+## Data Overview
+#### Utilize Iris data to do machine learing model and prediction
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, tidy = TRUE)
+library(ggplot2)
+library(caret)
+library(gridExtra)
+data(iris)
+```
+
+```{r iris_plot, echo = TRUE}
+ggplot(data=iris, aes(x=Petal.Width, y=Petal.Length)) + geom_point(aes(color=Species),alpha=0.4) 
+```
+
+## APP Functionality Summary
+### - The purpose of this app is to help you predict different Iris Species based on petal length and width respectively.
+### - It has two different machine learning algorithms to do the predictions
+1. LDA based Model Prediction
+2. RandomForest based Model Prediction
+
+### - It also provide the comparison of prediction results from those two models
+
+## Model Prediction Plots
+```{r pred_model, echo=TRUE}
+model_lda <- train(Species ~ Petal.Length + Petal.Width, data = iris, method = "lda")
+model_rf <- train(Species ~ Petal.Length + Petal.Width, data = iris, method = "rf", prox = TRUE)
+```
+```{r pred_plot}
+number_of_points <- 100
+minPLInput <- 1.0
+maxPLInput <- 6.9
+minPWInput <- 0.1
+maxPWInput <- 2.5
+set.seed(12345)
+testing <- data.frame(Petal.Length=runif(number_of_points, minPLInput, maxPLInput), Petal.Width=runif(number_of_points, minPWInput, maxPWInput))
+testing$pred_rf <- predict(model_rf, testing)  
+testing$pred_lda <- predict(model_lda, testing)
+testing$pred_same <- testing$pred_rf == testing$pred_lda
+m1 <- ggplot(data=testing, aes(x=Petal.Width, y=Petal.Length)) + geom_point(aes(color=pred_lda),alpha=0.4) + ggtitle("LDA Model Prediction Plot")
+m2 <- ggplot(data=testing, aes(x=Petal.Width, y=Petal.Length)) + geom_point(aes(color=pred_rf),alpha=0.4) + ggtitle("RF Model Prediction Plot")
+grid.arrange(m1, m2, ncol=2,nrow=1)
+```
+
+## Model Comparison Plots
+```{r comp_plot, echo = TRUE}
+ggplot(data=testing, aes(x=Petal.Width, y=Petal.Length)) + geom_point(aes(color=pred_same),alpha=0.4) + ggtitle("Model Prediction Comparison Plot")
+```
